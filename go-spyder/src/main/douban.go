@@ -5,9 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"time"
-	"os"
 	"strconv"
+	"time"
 )
 
 //定义新的数据类型
@@ -15,7 +14,6 @@ type Spider struct {
 	url    string
 	header map[string]string
 }
-
 
 //定义 Spider get的方法
 func (keyword Spider) get_html_header() string {
@@ -39,32 +37,32 @@ func (keyword Spider) get_html_header() string {
 
 func parse() {
 	header := map[string]string{
-		"Host": "movie.douban.com",
-		"Connection": "keep-alive",
-		"Cache-Control": "max-age=0",
+		"Host":                      "movie.douban.com",
+		"Connection":                "keep-alive",
+		"Cache-Control":             "max-age=0",
 		"Upgrade-Insecure-Requests": "1",
-		"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
-		"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-		"Referer": "https://movie.douban.com/top250",
+		"User-Agent":                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
+		"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+		"Referer":                   "https://movie.douban.com/top250",
 	}
 
 	//创建excel文件
-	f, err := os.Create("haha3.xlsx")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+	//f, err := os.Create("haha3.")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer f.Close()
 	//写入标题
-	f.WriteString("电影名称" + "\t" + "评分" + "\t" + "评价人数" + "\t" + "\r\n")
+	//f.WriteString("电影名称" + "\t" + "评分" + "\t" + "评价人数" + "\t" + "\r\n")
 
 	//循环每页解析并把结果写入excel
 	for i := 0; i < 10; i++ {
 		fmt.Println("正在抓取第" + strconv.Itoa(i) + "页......")
-		url := "https://movie.douban.com/top250?start=" + strconv.Itoa(i * 25) + "&filter="
+		url := "https://movie.douban.com/top250?start=" + strconv.Itoa(i*25) + "&filter="
 		spider := &Spider{url, header}
 		html := spider.get_html_header()
 
-		//评价人数
+		//评价人数xlsx
 		pattern2 := `<span>(.*?)评价</span>`
 		rp2 := regexp.MustCompile(pattern2)
 		find_txt2 := rp2.FindAllStringSubmatch(html, -1)
@@ -80,11 +78,11 @@ func parse() {
 		find_txt4 := rp4.FindAllStringSubmatch(html, -1)
 
 		// 写入UTF-8 BOM
-		f.WriteString("\xEF\xBB\xBF")
+		//f.WriteString("\xEF\xBB\xBF")
 		//  打印全部数据和写入excel文件
 		for i := 0; i < len(find_txt2); i++ {
-			fmt.Printf("%s %s %s\n", find_txt4[i][1], find_txt3[i][1], find_txt2[i][1], )
-			f.WriteString(find_txt4[i][1] + "\t" + find_txt3[i][1] + "\t" + find_txt2[i][1] + "\t" + "\r\n")
+			fmt.Printf("%s %s %s\n", find_txt4[i][1], find_txt3[i][1], find_txt2[i][1])
+			//f.WriteString(find_txt4[i][1] + "\t" + find_txt3[i][1] + "\t" + find_txt2[i][1] + "\t" + "\r\n")
 
 		}
 	}
