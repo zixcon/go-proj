@@ -4,6 +4,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
+	"fmt"
 )
 
 func HtmlTitle(body string) []string {
@@ -70,3 +71,29 @@ func HtmlContent(body string) map[string][]string {
 	})
 	return content
 }
+
+
+//func htmlParser(body string) {
+//	bodyReader := strings.NewReader(body)
+//	doc, err := goquery.NewDocumentFromReader(bodyReader)
+//	if err != nil {
+//		log.Fatalln(err)
+//	}
+//	doc.Find(".table_bg001 ").Each(func(i int, s *goquery.Selection) {
+//		// 标题
+//		band := s.Find("thead")
+//		band.Find("th").Each(func(j int, g *goquery.Selection) {
+//			th := g.Text()
+//			fmt.Print(th, " ")
+//		})
+//		fmt.Println()
+//		// 内容
+//		s.Find("tr").Each(func(j int, g *goquery.Selection) {
+//			g.Find("td").Each(func(k int, h *goquery.Selection) {
+//				td := h.Text()
+//				fmt.Print(td, " ")
+//			})
+//			fmt.Println()
+//		})
+//	})
+//}
