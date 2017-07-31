@@ -1,16 +1,19 @@
 package main
 
 import (
-	"net/http"
-	"io/ioutil"
-	"regexp"
-	"fmt"
-	"strings"
 	"bytes"
+	"encoding/xml"
+	"fmt"
+	"github.com/PuerkitoBio/goquery"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"regexp"
+	"strings"
+	"parser/wangyi"
+	"time"
+	"strconv"
 )
-
-// 爬取 xxxx 历年每天的交易数据
-// http://quotes.money.163.com/trade/lsjysj_600570.html?year=2016&season=3
 
 func WY_Header() map[string]string {
 	header := map[string]string{
@@ -23,6 +26,14 @@ func WY_Header() map[string]string {
 		"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 	}
 	return header
+}
+
+func WY_Get_Param(year int, season int) map[string]string {
+	param := map[string]string{
+		"year":   strconv.Itoa(year),
+		"season": strconv.Itoa(season),
+	}
+	return param
 }
 
 func stringJoin(arr []string, seprator string) string {
@@ -39,9 +50,9 @@ func GetRequest(url string, param map[string]string) *http.Request {
 	var paramStr = make([]string, 0, len(param))
 	var index int16
 	for key, value := range param {
-		paramStr = append(paramStr, key+"="+value)
+		paramStr = append(paramStr, key + "=" + value)
 		//getParam[index] = key + "=" + value
-		index ++
+		index++
 	}
 	urlStr := reqUrl + "?" + strings.Join(paramStr, "&")
 	fmt.Println("请求地址：", urlStr)
@@ -69,12 +80,15 @@ func DoReqeust(req *http.Request) string {
 }
 
 func parse_title(htmlBody string) {
-	body := unpackHtml(htmlBody)
+	// xmlParse(htmlBody)
+	body := htmlBody
 	fmt.Println("返回内容：", body)
+	htmlParser(body)
 	pattern_title := `<tr class="dbrow">(.*?)</tr>`
 	rp_title := regexp.MustCompile(pattern_title)
 	find_title := rp_title.FindAllStringSubmatch(body, -1)
 	fmt.Println(find_title)
+
 }
 
 func unpackHtml(html string) string {
@@ -100,14 +114,97 @@ func unpackHtml(html string) string {
 	return html
 }
 
-func main() {
-	param := map[string]string{
-		"year":   "2016",
-		"season": "1",
-	}
-	url := "http://quotes.money.163.com/trade/lsjysj_600570.html"
-	req := GetRequest(url, param)
-	body := DoReqeust(req)
-	parse_title(body)
+func xmlParse(htmlStr string) {
+	var t xml.Token
+	var err error
 
+	inputReader := strings.NewReader(htmlStr)
+	decoder := xml.NewDecoder(inputReader)
+	for t, err = decoder.Token(); err == nil; t, err = decoder.Token() {
+		switch token := t.(type) {
+		case xml.StartElement:
+			name := token.Name.Local
+			fmt.Printf("Token name: %s\n", name)
+			for _, attr := range token.Attr {
+				attrName := attr.Name.Local
+				attrValue := attr.Value
+				fmt.Printf("An attribute is: %s %s\n", attrName, attrValue)
+			}
+		// 处理元素结束（标签）
+		case xml.EndElement:
+			fmt.Printf("Token of '%s' end\n", token.Name.Local)
+		// 处理字符数据（这里就是元素的文本）
+		case xml.CharData:
+			content := string([]byte(token))
+			fmt.Printf("This is the content: %v\n", content)
+		default:
+		}
+	}
+}
+
+func htmlParser(body string) {
+	bodyReader := strings.NewReader(body)
+	doc, err := goquery.NewDocumentFromReader(bodyReader)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	doc.Find(".table_bg001 ").Each(func(i int, s *goquery.Selection) {
+		// 标题
+		band := s.Find("thead")
+		band.Find("th").Each(func(j int, g *goquery.Selection) {
+			th := g.Text()
+			fmt.Print(th, " ")
+		})
+		fmt.Println()
+		// 内容
+		s.Find("tr").Each(func(j int, g *goquery.Selection) {
+			g.Find("td").Each(func(k int, h *goquery.Selection) {
+				td := h.Text()
+				fmt.Print(td, " ")
+			})
+			fmt.Println()
+		})
+	})
+}
+
+func dealOne(url string) {
+	season := [4]int{4, 3, 2, 1}
+	year := time.Now().Year()
+	to_year := time.Now().Year()
+	for {
+		for i := 0; i < 4; i++ {
+			param := WY_Get_Param(year,season[i])
+			req := GetRequest(url, param)
+			body := DoReqeust(req)
+			//parse_title(body)
+
+			title := wangyi.HtmlTitle(body)
+			content := wangyi.HtmlContent(body)
+			fmt.Println(title)
+			fmt.Println(content)
+			fmt.Println(len(content))
+			if len(content) <= 1 && year < to_year{
+				break
+			}
+		}
+		year--
+	}
+}
+
+func main() {
+	//param := map[string]string{
+	//	"year":   "1900",
+	//	"season": "1",
+	//}
+	//url := "http://quotes.money.163.com/trade/lsjysj_600570.html"
+	//req := GetRequest(url, param)
+	//body := DoReqeust(req)
+	//
+	//title := wangyi.HtmlTitle(body)
+	//content := wangyi.HtmlContent(body)
+	//fmt.Println(title)
+	//fmt.Println(content)
+
+	url := "http://quotes.money.163.com/trade/lsjysj_600570.html"
+	dealOne(url)
 }
