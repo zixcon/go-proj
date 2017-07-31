@@ -167,11 +167,13 @@ func htmlParser(body string) {
 	})
 }
 
+
 func dealOne(url string) {
 	season := [4]int{4, 3, 2, 1}
 	year := time.Now().Year()
 	to_year := time.Now().Year()
-	for {
+	loop := true
+	for loop {
 		for i := 0; i < 4; i++ {
 			param := WY_Get_Param(year,season[i])
 			req := GetRequest(url, param)
@@ -183,7 +185,8 @@ func dealOne(url string) {
 			fmt.Println(title)
 			fmt.Println(content)
 			fmt.Println(len(content))
-			if len(content) <= 1 && year < to_year{
+			if len(content) <= 0 && year < to_year{
+				loop = false
 				break
 			}
 		}
