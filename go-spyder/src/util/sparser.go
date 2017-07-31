@@ -45,9 +45,10 @@ func HtmlContent(body string) map[string][]string {
 	content = make(map[string][]string)
 	doc.Find(".table_bg001 ").EachWithBreak(func(i int, s *goquery.Selection) bool{
 		// 内容
-		s.Find("tr").Each(func(j int, g *goquery.Selection) {
+		s.Find("tr").EachWithBreak(func(j int, g *goquery.Selection) bool{
 			td := g.Find("td")
 			size := td.Size()
+			//log.Println("内容size:" , size)
 			body := make([]string, size )
 			td.Each(func(k int, h *goquery.Selection) {
 				td_body := h.Text()
@@ -58,8 +59,11 @@ func HtmlContent(body string) map[string][]string {
 				}
 				//fmt.Print(td_body + " ")
 			})
-			content[key] = body
+			if len(key) > 0 && len(body) >0 {
+				content[key] = body
+			}
 			//fmt.Println()
+			return true
 		})
 		return false
 	})
