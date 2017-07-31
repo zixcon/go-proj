@@ -81,7 +81,7 @@ func dealOne(url string) {
 			param := WY_Get_Param(year, season[i])
 			req := GetRequest(url, param)
 			body := DoReqeust(req)
-
+			//log.Println(body)
 			log.Println("请求结果处理开始")
 			start := time.Now()
 			title := netease.HtmlTitle(body)
