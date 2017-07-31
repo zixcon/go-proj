@@ -4,7 +4,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
-	"fmt"
 )
 
 func HtmlTitle(body string) []string {
