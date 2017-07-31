@@ -1,4 +1,4 @@
-package wangyi
+package netease
 
 import (
 	"github.com/PuerkitoBio/goquery"
@@ -21,11 +21,12 @@ func HtmlTitle(body string) []string {
 		th.EachWithBreak(func(j int, g *goquery.Selection) bool {
 			th_title := g.Text()
 			arr[j] = th_title
-			if (j >= th.Size()) {
-				return false
-			} else {
-				return true
-			}
+			//if (j >= th.Size()) {
+			//	return false
+			//} else {
+			//	return true
+			//}
+			return true
 		})
 		titles = arr
 		return false

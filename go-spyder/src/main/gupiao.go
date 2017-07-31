@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"parser/wangyi"
+	"util/netease"
 	"time"
 	"strconv"
 )
@@ -55,7 +55,7 @@ func GetRequest(url string, param map[string]string) *http.Request {
 		index++
 	}
 	urlStr := reqUrl + "?" + strings.Join(paramStr, "&")
-	fmt.Println("请求地址：", urlStr)
+	log.Println("请求地址：", urlStr)
 	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -68,6 +68,8 @@ func GetRequest(url string, param map[string]string) *http.Request {
 }
 
 func DoReqeust(req *http.Request) string {
+	log.Println("http请求开始")
+	start := time.Now()
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -76,6 +78,8 @@ func DoReqeust(req *http.Request) string {
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	elapsed := time.Since(start)
+	log.Println("http请求结束,总共耗时: ", elapsed)
 	return string(body)
 }
 
@@ -174,17 +178,20 @@ func dealOne(url string) {
 	to_year := time.Now().Year()
 	loop := true
 	for loop {
+		log.Println()
 		for i := 0; i < 4; i++ {
 			param := WY_Get_Param(year,season[i])
 			req := GetRequest(url, param)
 			body := DoReqeust(req)
-			//parse_title(body)
 
-			title := wangyi.HtmlTitle(body)
-			content := wangyi.HtmlContent(body)
-			fmt.Println(title)
-			fmt.Println(content)
-			fmt.Println(len(content))
+			log.Println("请求结果处理开始")
+			start := time.Now()
+			title := netease.HtmlTitle(body)
+			content := netease.HtmlContent(body)
+			log.Println(title)
+			log.Println(content)
+			elapsed := time.Since(start)
+			log.Println("请求结果处理结束,总共耗时: ", elapsed)
 			if len(content) <= 0 && year < to_year{
 				loop = false
 				break
