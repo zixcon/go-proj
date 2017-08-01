@@ -3,11 +3,8 @@ package netease
 import (
 	"time"
 	"log"
-	"strings"
-	"net/http"
-	"fmt"
-	"io/ioutil"
 	"strconv"
+	"util/client"
 )
 
 func WY_Header() map[string]string {
@@ -18,8 +15,8 @@ func WY_Header() map[string]string {
 		"Cache-Control":             "max-age=0",
 		"Upgrade-Insecure-Requests": "1",
 		//"User-Agent":                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
-		"User-Agent":                RadomUA(),
-		"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+		"User-Agent": RadomUA(),
+		"Accept":     "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 	}
 	return header
 }
@@ -30,44 +27,6 @@ func WY_Get_Param(year int, season int) map[string]string {
 		"season": strconv.Itoa(season),
 	}
 	return param
-}
-
-func GetRequest(url string, param map[string]string) *http.Request {
-	var reqUrl = url
-	var paramStr = make([]string, 0, len(param))
-	var index int16
-	for key, value := range param {
-		paramStr = append(paramStr, key+"="+value)
-		//getParam[index] = key + "=" + value
-		index++
-	}
-	urlStr := reqUrl + "?" + strings.Join(paramStr, "&")
-	log.Println("请求地址：", urlStr)
-	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
-	if err != nil {
-		fmt.Println(err)
-		//panic(err)
-	}
-	for key, value := range WY_Header() {
-		req.Header.Add(key, value)
-	}
-	return req
-}
-
-func DoReqeust(req *http.Request) string {
-	log.Println("http请求开始")
-	start := time.Now()
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		//panic(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	elapsed := time.Since(start)
-	log.Println("http请求结束,总共耗时: ", elapsed)
-	return string(body)
 }
 
 func DealOne(url string) {
@@ -90,8 +49,9 @@ func DealOne(url string) {
 func CallOne(year int, season int, url string) ([]string, map[string][]string) {
 	log.Println()
 	param := WY_Get_Param(year, season)
-	req := GetRequest(url, param)
-	body := DoReqeust(req)
+	req := client.GetRequest(url, param, WY_Header())
+	bytes := client.DoReqeust(req)
+	body := string(bytes)
 	//log.Println(body)
 	log.Println("请求结果处理开始")
 	start := time.Now()
