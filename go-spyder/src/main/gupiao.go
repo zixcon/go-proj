@@ -76,8 +76,8 @@ func dealOne(url string) {
 	to_year := time.Now().Year()
 	loop := true
 	for loop {
-		log.Println()
 		for i := 0; i < 4; i++ {
+			log.Println()
 			param := WY_Get_Param(year, season[i])
 			req := GetRequest(url, param)
 			body := DoReqeust(req)
