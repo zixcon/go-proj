@@ -77,8 +77,20 @@ func dealOne(url string) {
 	loop := true
 	for loop {
 		for i := 0; i < 4; i++ {
-			log.Println()
-			param := WY_Get_Param(year, season[i])
+		        _ , content := callme(year,season[i],url)
+			if len(content) <= 0 && year < to_year {
+				loop = false
+				break
+			}
+		}
+		year--
+	}
+}
+
+
+func callme(year int ,season int,url string) ([]string,map[string][]string){
+	log.Println()
+			param := WY_Get_Param(year, season)
 			req := GetRequest(url, param)
 			body := DoReqeust(req)
 			//log.Println(body)
@@ -90,13 +102,7 @@ func dealOne(url string) {
 			log.Println(content)
 			elapsed := time.Since(start)
 			log.Println("请求结果处理结束,总共耗时: ", elapsed)
-			if len(content) <= 0 && year < to_year {
-				loop = false
-				break
-			}
-		}
-		year--
-	}
+	return title,content
 }
 
 func main() {
