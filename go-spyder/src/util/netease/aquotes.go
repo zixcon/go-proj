@@ -6,6 +6,7 @@ import (
 	"util/client"
 	"encoding/json"
 	"time"
+	"github.com/golang/glog"
 )
 
 // A股 http://quotes.money.163.com/hs/service/diyrank.php
@@ -24,7 +25,7 @@ type Quote struct {
 
 func json2struct(body []byte) (*QuotePage, error) {
 	var quotePage *QuotePage
-	err := json.Unmarshal(body, quotePage)
+	err := json.Unmarshal(body, &quotePage)
 	return quotePage, err
 }
 
@@ -72,6 +73,7 @@ func doA(pageNo int, pageSize int, url string) int {
 	body := CallPage(pageNo, pageSize, url)
 	//log.Println(string(body))
 	log.Println(pageNo, "请求结果处理开始")
+	glog.Infoln(pageNo, "请求结果处理开始")
 	start := time.Now()
 	quotePage, err := json2struct(body)
 	if err != nil {
@@ -82,6 +84,12 @@ func doA(pageNo int, pageSize int, url string) int {
 	//for i := 0; i < pageSize; i++ {
 	//	log.Println(quotePage.Quotes[i].NAME)
 	//}
+
+	urlArr := DoAquote(quotePage.Quotes)
+	for i := 0; i < len(urlArr); i++ {
+		DealOne(urlArr[i])
+	}
+
 	elapsed := time.Since(start)
 	log.Println(pageNo, "请求结果处理结束,总共耗时: ", elapsed)
 	return quotePage.Pagecount
