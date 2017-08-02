@@ -10,9 +10,9 @@ import (
 
 // A股 http://quotes.money.163.com/hs/service/diyrank.php
 type QuotePage struct {
-	total     int
-	pagecount int
-	quotes    []Quote
+	Total     int `json:"total"`
+	Pagecount int `json:"pagecount"`
+	Quotes    []Quote `json:"list"`
 }
 
 type Quote struct {
@@ -23,7 +23,7 @@ type Quote struct {
 }
 
 func json2struct(body []byte) (*QuotePage, error) {
-	quotePage := &QuotePage{}
+	var quotePage *QuotePage
 	err := json.Unmarshal(body, quotePage)
 	return quotePage, err
 }
