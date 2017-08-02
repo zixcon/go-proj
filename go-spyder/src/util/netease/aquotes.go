@@ -56,22 +56,35 @@ func WY_A_Get_Param(pageNo int, pageSize int) map[string]string {
 }
 
 func DealA(url string) {
-	pagecount := 1
 	pageNo := 1
 	pageSize := 24
-	for ; pageNo < pagecount; pageNo ++ {
-		body := CallPage(pageNo, pageSize, url)
-		log.Println(string(body))
-		log.Println("请求结果处理开始")
-		start := time.Now()
-		quotePage, err := json2struct(body)
-		if err != nil {
-			log.Println("json 2 obj error")
+	for pagecount := pageNo; pageNo <= pagecount; pageNo ++ {
+		if pageNo == 1 {
+			pagecount = doA(pageNo, pageSize, url)
+		} else {
+			go doA(pageNo, pageSize, url)
 		}
-		pagecount = quotePage.pagecount
-		elapsed := time.Since(start)
-		log.Println("请求结果处理结束,总共耗时: ", elapsed)
 	}
+	time.Sleep(time.Second * 30)
+}
+
+func doA(pageNo int, pageSize int, url string) int {
+	body := CallPage(pageNo, pageSize, url)
+	//log.Println(string(body))
+	log.Println(pageNo, "请求结果处理开始")
+	start := time.Now()
+	quotePage, err := json2struct(body)
+	if err != nil {
+		log.Println(pageNo, "json 2 obj error")
+	}
+	resp,_ := json.Marshal(quotePage)
+	log.Println(pageNo, string(resp))
+	//for i := 0; i < pageSize; i++ {
+	//	log.Println(quotePage.Quotes[i].NAME)
+	//}
+	elapsed := time.Since(start)
+	log.Println(pageNo, "请求结果处理结束,总共耗时: ", elapsed)
+	return quotePage.Pagecount
 }
 
 func CallPage(pageNo int, pageSize int, url string) []byte {
