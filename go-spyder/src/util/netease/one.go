@@ -1,10 +1,11 @@
 package netease
 
 import (
-	"time"
 	"log"
 	"strconv"
+	"time"
 	"util/client"
+	"util"
 )
 
 func WY_Header() map[string]string {
@@ -47,20 +48,19 @@ func DealOne(url string) {
 }
 
 func CallOne(year int, season int, url string) ([]string, map[string][]string) {
-	log.Println()
 	param := WY_Get_Param(year, season)
 	req := client.GetRequest(url, param, WY_Header())
 	bytes := client.DoReqeust(req)
 	body := string(bytes)
 	//log.Println(body)
-	log.Println("请求结果处理开始")
+	log.Println("GID:", util.GoID(),"请求结果处理开始")
 	start := time.Now()
 	title := HtmlTitle(body)
 	content := HtmlContent(body)
-	log.Println(title)
-	log.Println(content)
+	//log.Println("GID:", util.GoID(),title)
+	log.Println("GID:", util.GoID(),content)
 	elapsed := time.Since(start)
-	log.Println("请求结果处理结束,总共耗时: ", elapsed)
+	log.Println("GID:", util.GoID(),"请求结果处理结束,总共耗时: ", elapsed)
 	return title, content
 }
 
