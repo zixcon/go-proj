@@ -1,25 +1,28 @@
 package client
 
 import (
-	"strings"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"fmt"
+	"strings"
 	"time"
-	"io/ioutil"
+	"util"
 )
 
 func GetRequest(url string, param map[string]string, header map[string]string) *http.Request {
-	var reqUrl = url
-	var paramStr = make([]string, 0, len(param))
-	var index int16
-	for key, value := range param {
-		paramStr = append(paramStr, key+"="+value)
-		//getParam[index] = key + "=" + value
-		index++
+	var urlStr = url
+	if param != nil {
+		var paramStr = make([]string, 0, len(param))
+		var index int16
+		for key, value := range param {
+			paramStr = append(paramStr, key+"="+value)
+			//getParam[index] = key + "=" + value
+			index++
+		}
+		urlStr = url + "?" + strings.Join(paramStr, "&")
 	}
-	urlStr := reqUrl + "?" + strings.Join(paramStr, "&")
-	log.Println("请求地址：", urlStr)
+	log.Println("GID:", util.GoID(), "请求地址：", urlStr)
 	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -32,7 +35,7 @@ func GetRequest(url string, param map[string]string, header map[string]string) *
 }
 
 func DoReqeust(req *http.Request) []byte {
-	log.Println("http请求开始")
+	log.Println("GID:", util.GoID(),"http请求开始")
 	start := time.Now()
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -43,6 +46,6 @@ func DoReqeust(req *http.Request) []byte {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	elapsed := time.Since(start)
-	log.Println("http请求结束,总共耗时: ", elapsed)
+	log.Println("GID:", util.GoID(),"http请求结束,总共耗时: ", elapsed)
 	return body
 }
