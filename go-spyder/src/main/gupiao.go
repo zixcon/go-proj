@@ -2,16 +2,33 @@ package main
 
 import (
 	"util/netease"
+	"util"
 )
 
 func main() {
 
-	//ua := netease.RadomUA()
-	//log.Println(ua)
+	// 这个函数设置的是Go语言跑几个线程。
+	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
+	// 这个函数返回当前有的CPU数。
+	fmt.Println("GID:", util.GoID(), "CPUs:", runtime.NumCPU(), "Goroutines:", runtime.NumGoroutine(), runtime.Stack)
 
-	//url := "http://quotes.money.163.com/trade/lsjysj_600570.html"
-	//netease.DealOne(url)
+	go func() {
+		log.Println(http.ListenAndServe("localhost:9999", nil))
+		pprof.Handler("")
+	}()
 
 	url := "http://quotes.money.163.com/hs/service/diyrank.php"
-	netease.DealA(url)
+
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go netease.DealA(ch1, url)
+	for {
+		select {
+		case url1 := <-ch1:
+			go netease.DoAquoteCh(ch2, url1)
+		case url2 := <-ch2:
+			go netease.DealOne(url2)
+		}
+	}
 }
