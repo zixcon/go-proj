@@ -1,10 +1,11 @@
 package netease
 
 import (
-	"strings"
 	"github.com/PuerkitoBio/goquery"
 	"log"
+	"strings"
 	"util/client"
+	"util"
 )
 
 var url = "http://quotes.money.163.com"
@@ -36,7 +37,7 @@ func forOneUrl(body string) string {
 	bodyReader := strings.NewReader(body)
 	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if err != nil {
-		log.Println(err)
+		log.Println("GID:", util.GoID(),err)
 	}
 	var href string
 	doc.Find("#menuCont").Find(".submenu_cont").Find(".sub_menu").EachWithBreak(func(i int, s *goquery.Selection) bool {
@@ -49,12 +50,11 @@ func forOneUrl(body string) string {
 		})
 		return true
 	})
-	log.Println(href)
+	log.Println("GID:", util.GoID(),href)
 	return url + href
 }
 
 func CallAquote(url string) []byte {
-	log.Println()
 	req := client.GetRequest(url, nil, WY_Aquote_Header())
 	body := client.DoReqeust(req)
 	//log.Println(body)
@@ -68,8 +68,16 @@ func DoAquote(quotes []Quote) []string {
 	for i := 0; i < len(aquoteArr); i++ {
 		body := CallAquote(aquoteArr[i])
 		url := forOneUrl(string(body))
-		log.Println(url)
+		log.Println("GID:", util.GoID(),url)
 		arr[i] = url
 	}
 	return arr
+}
+
+// ------------------------
+
+func DoAquoteCh(ch chan<- string, srcUrl string) {
+	body := CallAquote(srcUrl)
+	url := forOneUrl(string(body))
+	ch <- url
 }
