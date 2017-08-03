@@ -1,18 +1,19 @@
 package netease
 
 import (
-	"strconv"
-	"log"
-	"util/client"
 	"encoding/json"
+	"log"
+	"strconv"
 	"time"
-	"github.com/golang/glog"
+	"util/client"
+	"sync"
+	"util"
 )
 
 // A股 http://quotes.money.163.com/hs/service/diyrank.php
 type QuotePage struct {
-	Total     int `json:"total"`
-	Pagecount int `json:"pagecount"`
+	Total     int     `json:"total"`
+	Pagecount int     `json:"pagecount"`
 	Quotes    []Quote `json:"list"`
 }
 
@@ -56,50 +57,69 @@ func WY_A_Get_Param(pageNo int, pageSize int) map[string]string {
 	return param
 }
 
-func DealA(url string) {
+func DealA(ch chan<- string, url string) {
 	pageNo := 1
 	pageSize := 24
-	for pagecount := pageNo; pageNo <= pagecount; pageNo ++ {
+	var wg sync.WaitGroup
+	for pagecount := pageNo; pageNo <= pagecount; pageNo++ {
 		if pageNo == 1 {
-			pagecount = doA(pageNo, pageSize, url)
+			wg.Add(1)
+			defer wg.Done()
+			pagecount = doA(ch, pageNo, pageSize, url)
 		} else {
-			go doA(pageNo, pageSize, url)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				doA(ch, pageNo, pageSize, url)
+			}()
 		}
 	}
-	time.Sleep(time.Second * 30)
+	wg.Wait()
+	close(ch)
+	// time.Sleep(time.Second * 30)
 }
 
-func doA(pageNo int, pageSize int, url string) int {
+func doA(ch chan<- string, pageNo int, pageSize int, url string) int {
 	body := CallPage(pageNo, pageSize, url)
 	//log.Println(string(body))
-	log.Println(pageNo, "请求结果处理开始")
-	glog.Infoln(pageNo, "请求结果处理开始")
+	log.Println("GID:", util.GoID(),  "请求结果处理开始")
 	start := time.Now()
 	quotePage, err := json2struct(body)
 	if err != nil {
-		log.Println(pageNo, "json 2 obj error")
+		log.Println("GID:", util.GoID(), "json 2 obj error")
 	}
-	resp,_ := json.Marshal(quotePage)
-	log.Println(pageNo, string(resp))
+	resp, _ := json.Marshal(quotePage)
+	log.Println("GID:", util.GoID(), "请求返回结果", string(resp))
 	//for i := 0; i < pageSize; i++ {
 	//	log.Println(quotePage.Quotes[i].NAME)
 	//}
 
-	urlArr := DoAquote(quotePage.Quotes)
-	for i := 0; i < len(urlArr); i++ {
-		DealOne(urlArr[i])
-	}
+	DealAquoteCh(ch, quotePage.Quotes)
+
+	//urlArr := DoAquote(quotePage.Quotes)
+	//for i := 0; i < len(urlArr); i++ {
+	//	ch <- urlArr[i]
+	//	// DealOne(urlArr[i])
+	//}
 
 	elapsed := time.Since(start)
-	log.Println(pageNo, "请求结果处理结束,总共耗时: ", elapsed)
+	log.Println("GID:", util.GoID(), "请求结果处理结束,总共耗时: ", elapsed)
 	return quotePage.Pagecount
 }
 
 func CallPage(pageNo int, pageSize int, url string) []byte {
-	log.Println()
 	param := WY_A_Get_Param(pageNo, pageSize)
 	req := client.GetRequest(url, param, WY_A_Header())
 	body := client.DoReqeust(req)
 	//log.Println(body)
 	return body
+}
+
+// ------------------------
+
+func DealAquoteCh(ch chan<- string, quotes []Quote) {
+	for i := 0; i < len(quotes); i++ {
+		quote := quotes[i]
+		ch <- url + "/" + quote.CODE + ".html"
+	}
 }
