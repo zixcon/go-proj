@@ -4,6 +4,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
+	"util"
 )
 
 func HtmlTitle(body string) []string {
@@ -11,12 +12,12 @@ func HtmlTitle(body string) []string {
 	bodyReader := strings.NewReader(body)
 	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("GID:", util.GoID(),err)
 	}
-	doc.Find(".table_bg001 ").EachWithBreak(func(i int, s *goquery.Selection) bool {
+	doc.Find(".table_bg001").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		// 标题
 		th := s.Find("thead").Find("th")
-		log.Println("标题Size:" , th.Size())
+		//log.Println("标题Size:", th.Size())
 		arr := make([]string, th.Size())
 		th.EachWithBreak(func(j int, g *goquery.Selection) bool {
 			th_title := g.Text()
@@ -40,17 +41,17 @@ func HtmlContent(body string) map[string][]string {
 	bodyReader := strings.NewReader(body)
 	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("GID:", util.GoID(),err)
 	}
 	/* 创建集合 */
 	content = make(map[string][]string)
-	doc.Find(".table_bg001 ").EachWithBreak(func(i int, s *goquery.Selection) bool{
+	doc.Find(".table_bg001 ").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		// 内容
-		s.Find("tr").EachWithBreak(func(j int, g *goquery.Selection) bool{
+		s.Find("tr").EachWithBreak(func(j int, g *goquery.Selection) bool {
 			td := g.Find("td")
 			size := td.Size()
 			//log.Println("内容size:" , size)
-			body := make([]string, size )
+			body := make([]string, size)
 			td.Each(func(k int, h *goquery.Selection) {
 				td_body := h.Text()
 				if k == 0 {
@@ -60,7 +61,7 @@ func HtmlContent(body string) map[string][]string {
 				}
 				//fmt.Print(td_body + " ")
 			})
-			if len(key) > 0 && len(body) >0 {
+			if len(key) > 0 && len(body) > 0 {
 				content[key] = body
 			}
 			//fmt.Println()
@@ -70,7 +71,6 @@ func HtmlContent(body string) map[string][]string {
 	})
 	return content
 }
-
 
 //func htmlParser(body string) {
 //	bodyReader := strings.NewReader(body)
