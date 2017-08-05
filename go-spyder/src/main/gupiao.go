@@ -3,6 +3,8 @@ package main
 import (
 	"util/netease"
 	"util"
+	"runtime"
+	"fmt"
 )
 
 func main() {
@@ -12,10 +14,10 @@ func main() {
 	// 这个函数返回当前有的CPU数。
 	fmt.Println("GID:", util.GoID(), "CPUs:", runtime.NumCPU(), "Goroutines:", runtime.NumGoroutine(), runtime.Stack)
 
-	go func() {
-		log.Println(http.ListenAndServe("localhost:9999", nil))
-		pprof.Handler("")
-	}()
+	//go func() {
+	//	log.Println(http.ListenAndServe("localhost:9999", nil))
+	//	pprof.Handler("")
+	//}()
 
 	url := "http://quotes.money.163.com/hs/service/diyrank.php"
 
