@@ -48,19 +48,22 @@ func DealOne(url string) {
 }
 
 func CallOne(year int, season int, url string) ([]string, map[string][]string) {
+	var title []string
+	var content map[string][]string
 	param := WY_Get_Param(year, season)
 	req := client.GetRequest(url, param, WY_Header())
 	bytes := client.DoReqeust(req)
-	body := string(bytes)
-	//log.Println(body)
-	log.Println("GID:", util.GoID(),"请求结果处理开始")
-	start := time.Now()
-	title := HtmlTitle(body)
-	content := HtmlContent(body)
-	//log.Println("GID:", util.GoID(),title)
-	log.Println("GID:", util.GoID(),content)
-	elapsed := time.Since(start)
-	log.Println("GID:", util.GoID(),"请求结果处理结束,总共耗时: ", elapsed)
+	if len(bytes) > 0 {
+		body := string(bytes)
+		log.Println("GID:", util.GoID(), "请求结果处理开始")
+		start := time.Now()
+		title = HtmlTitle(body)
+		content = HtmlContent(body)
+		//log.Println("GID:", util.GoID(),title)
+		log.Println("GID:", util.GoID(), "解析内容: ", content)
+		elapsed := time.Since(start)
+		log.Println("GID:", util.GoID(), "请求结果处理结束,总共耗时: ", elapsed)
+	}
 	return title, content
 }
 

@@ -4,7 +4,7 @@ import (
 	"util/netease"
 	"util"
 	"runtime"
-	"fmt"
+	"log"
 )
 
 func main() {
@@ -12,7 +12,7 @@ func main() {
 	// 这个函数设置的是Go语言跑几个线程。
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 	// 这个函数返回当前有的CPU数。
-	fmt.Println("GID:", util.GoID(), "CPUs:", runtime.NumCPU(), "Goroutines:", runtime.NumGoroutine(), runtime.Stack)
+	log.Println("GID:", util.GoID(), "CPUs:", runtime.NumCPU(), "Goroutines:", runtime.NumGoroutine())
 
 	//go func() {
 	//	log.Println(http.ListenAndServe("localhost:9999", nil))

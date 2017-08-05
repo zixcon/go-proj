@@ -81,37 +81,43 @@ func DealA(ch chan<- string, url string) {
 
 func doA(ch chan<- string, pageNo int, pageSize int, url string) int {
 	body := CallPage(pageNo, pageSize, url)
-	//log.Println(string(body))
-	log.Println("GID:", util.GoID(),  "请求结果处理开始")
-	start := time.Now()
-	quotePage, err := json2struct(body)
-	if err != nil {
-		log.Println("GID:", util.GoID(), "json 2 obj error")
+	if len(body) > 0 {
+		log.Println("GID:", util.GoID(), "请求结果处理开始:", string(body))
+		start := time.Now()
+		quotePage, err := json2struct(body)
+		if err != nil {
+			log.Println("GID:", util.GoID(), "json 2 obj error")
+			return -1
+		}
+		//resp, err := json.Marshal(quotePage)
+		//if err != nil {
+		//	log.Println("GID:", util.GoID(), "obj 2 json error")
+		//}
+		//log.Println("GID:", util.GoID(), "请求返回结果", string(resp))
+		//for i := 0; i < pageSize; i++ {F
+		//	log.Println(quotePage.Quotes[i].NAME)
+		//}
+		if quotePage != nil {
+			DealAquoteCh(ch, quotePage.Quotes)
+		}
+
+		//urlArr := DoAquote(quotePage.Quotes)
+		//for i := 0; i < len(urlArr); i++ {
+		//	ch <- urlArr[i]
+		//	// DealOne(urlArr[i])
+		//}
+
+		elapsed := time.Since(start)
+		log.Println("GID:", util.GoID(), "请求结果处理结束,总共耗时: ", elapsed)
+		return quotePage.Pagecount
 	}
-	resp, _ := json.Marshal(quotePage)
-	log.Println("GID:", util.GoID(), "请求返回结果", string(resp))
-	//for i := 0; i < pageSize; i++ {
-	//	log.Println(quotePage.Quotes[i].NAME)
-	//}
-
-	DealAquoteCh(ch, quotePage.Quotes)
-
-	//urlArr := DoAquote(quotePage.Quotes)
-	//for i := 0; i < len(urlArr); i++ {
-	//	ch <- urlArr[i]
-	//	// DealOne(urlArr[i])
-	//}
-
-	elapsed := time.Since(start)
-	log.Println("GID:", util.GoID(), "请求结果处理结束,总共耗时: ", elapsed)
-	return quotePage.Pagecount
+	return -1
 }
 
 func CallPage(pageNo int, pageSize int, url string) []byte {
 	param := WY_A_Get_Param(pageNo, pageSize)
 	req := client.GetRequest(url, param, WY_A_Header())
 	body := client.DoReqeust(req)
-	//log.Println(body)
 	return body
 }
 

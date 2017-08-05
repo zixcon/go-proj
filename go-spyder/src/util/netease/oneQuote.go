@@ -41,7 +41,7 @@ func HtmlContent(body string) map[string][]string {
 	bodyReader := strings.NewReader(body)
 	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if err != nil {
-		log.Println("GID:", util.GoID(),err)
+		log.Println("GID:", util.GoID(), err.Error())
 	}
 	/* 创建集合 */
 	content = make(map[string][]string)
